@@ -1,0 +1,329 @@
+@using CodeKurs.Web.Models
+@using System.Text.Json
+@model CodeKurs.Web.Models.ProgrammingTask
+@{
+    ViewData["Title"] = Model.Title;
+    var choices = Model.Type == TaskType.MultipleChoice && !string.IsNullOrEmpty(Model.ChoicesJson) 
+        ? JsonSerializer.Deserialize<List<string>>(Model.ChoicesJson) 
+        : new List<string>();
+}
+
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar mit Aufgaben nach Sprache gruppiert -->
+        <div class="col-md-3">
+            <div class="accordion shadow-sm mb-4" id="taskAccordion">
+                @if (ViewBag.GroupedTasks != null)
+                {
+                    var groupedTasks = (Dictionary<string, List<TaskNavItem>>)ViewBag.GroupedTasks;
+                    foreach (var lang in groupedTasks)
+                    {
+                        var langId = lang.Key.Replace("#", "sharp").ToLower();
+                        var langName = lang.Key.ToUpper() == "CSHARP" ? "C#" : (lang.Key.ToUpper() == "JAVASCRIPT" ? "JavaScript" : lang.Key.ToUpper());
+                        
+                        <div class="accordion-item border-0">
+                            <h2 class="accordion-header" id="heading_@langId">
+                                <button class="accordion-button @(Model.Language.ToLower() != lang.Key.ToLower() ? "collapsed" : "") bg-dark text-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_@langId">
+                                    <i class="bi @(lang.Key.ToLower() == "csharp" ? "bi-hash" : (lang.Key.ToLower() == "javascript" ? "bi-type-js" : "bi-cup-hot")) me-2 text-info"></i>
+                                    @langName
+                                </button>
+                            </h2>
+                            <div id="collapse_@langId" class="accordion-collapse collapse @(Model.Language.ToLower() == lang.Key.ToLower() ? "show" : "")" data-bs-parent="#taskAccordion">
+                                <div class="accordion-body p-0">
+                                    <div class="list-group list-group-flush">
+                                        @foreach (var t in lang.Value)
+                                        {
+                                            <a asp-action="Index" asp-route-id="@t.Id" 
+                                               class="list-group-item list-group-item-action @(Model.Id == t.Id ? "active" : "") py-2">
+                                                <small><i class="bi @(t.Type == TaskType.Programming ? "bi-code-slash" : "bi-question-circle") me-2"></i> @t.Title</small>
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+        
+        <!-- Hauptbereich -->
+        <div class="col-md-9">
+            <div class="card bg-light border-0 shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h2 class="card-title text-primary mb-0">@Model.Title</h2>
+                        @if (ViewBag.IsCompleted == true)
+                        {
+                            <span id="statusBadge" class="badge bg-success p-2"><i class="bi bi-check-circle"></i> Abgeschlossen</span>
+                        }
+                        else
+                        {
+                            <span id="statusBadge" class="badge bg-secondary p-2">Noch nicht gelöst</span>
+                        }
+                    </div>
+                    <p class="card-text lead">@Model.Description</p>
+                </div>
+            </div>
+            
+            @if (Model.Type == TaskType.Programming)
+            {
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="bi bi-code-slash"></i> Editor</h5>
+                                <button id="runButton" class="btn btn-success px-4">
+                                    <i class="bi bi-play-fill"></i> Ausführen
+                                </button>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="editor" style="height: 500px; border: 1px solid #333;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card shadow-sm border-0 h-100">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0"><i class="bi bi-terminal"></i> Konsole / Feedback</h5>
+                            </div>
+                            <div class="card-body d-flex flex-column bg-dark">
+                                <div id="feedback" class="mb-3 alert d-none"></div>
+                                <pre id="output" class="text-light p-2 flex-grow-1 mb-0" style="font-family: 'Consolas', 'Courier New', monospace; font-size: 0.85rem; white-space: pre-wrap; background: transparent; overflow-y: auto;"></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (Model.Type == TaskType.MultipleChoice)
+            {
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card shadow-sm border-0">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="mb-0"><i class="bi bi-list-check"></i> Quiz</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="quizForm">
+                                    @foreach (var choice in choices)
+                                    {
+                                        <div class="form-check mb-3 p-3 border rounded @(ViewBag.LastAnswer == choice ? "bg-light border-primary" : "")">
+                                            <input class="form-check-input ms-0 me-3" type="radio" name="quizChoice" id="choice_@choice.GetHashCode()" value="@choice" @(ViewBag.LastAnswer == choice ? "checked" : "")>
+                                            <label class="form-check-label w-100" for="choice_@choice.GetHashCode()">
+                                                @choice
+                                            </label>
+                                        </div>
+                                    }
+                                    <div id="feedback" class="mb-3 alert d-none"></div>
+                                    <button id="submitQuiz" class="btn btn-primary px-5 mt-3">Antwort prüfen</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="taskId" value="@Model.Id" />
+<input type="hidden" id="taskType" value="@Model.Type" />
+<textarea id="initialCode" style="display:none;">@Model.InitialCode</textarea>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    @if (Model.Type == TaskType.Programming)
+    {
+        <script src="~/lib/monaco-editor/vs/loader.js"></script>
+        <script>
+            require.config({ paths: { 'vs': '/lib/monaco-editor/vs' } });
+
+            window.MonacoEnvironment = {
+                getWorkerUrl: function (workerId, label) {
+                    return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+                        self.MonacoEnvironment = {
+                            baseUrl: '${window.location.origin}/lib/monaco-editor/vs'
+                        };
+                        importScripts('${window.location.origin}/lib/monaco-editor/vs/base/worker/workerMain.js');`
+                    )}`;
+                }
+            };
+
+            var editor;
+
+            require(['vs/editor/editor.main'], function () {
+                // Enable validation for JS/TS
+                monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
+                    noSemanticValidation: false,
+                    noSyntaxValidation: false,
+                });
+
+                // Set compiler options for JS/TS
+                monaco.languages.typescript.javascriptDefaults.setCompilerOptions({
+                    target: monaco.languages.typescript.ScriptTarget.ES2020,
+                    allowNonTsExtensions: true,
+                });
+
+                // --- C# Completions ---
+                monaco.languages.registerCompletionItemProvider('csharp', {
+                    provideCompletionItems: function(model, position) {
+                        var suggestions = [
+                            { label: 'Console.WriteLine', kind: monaco.languages.CompletionItemKind.Method, insertText: 'Console.WriteLine(${1:message});', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet },
+                            { label: 'public class', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'public class ${1:ClassName}\n{\n\t$0\n}', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet },
+                            { label: 'static void Main', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'public static void Main(string[] args)\n{\n\t$0\n}', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet },
+                            { label: 'int', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'int' },
+                            { label: 'string', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'string' },
+                            { label: 'if', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'if (${1:condition})\n{\n\t$0\n}', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet }
+                        ];
+                        return { suggestions: suggestions };
+                    }
+                });
+
+                // --- Java Completions ---
+                monaco.languages.registerCompletionItemProvider('java', {
+                    provideCompletionItems: function(model, position) {
+                        var suggestions = [
+                            { label: 'System.out.println', kind: monaco.languages.CompletionItemKind.Method, insertText: 'System.out.println(${1:message});', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet },
+                            { label: 'public class', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'public class ${1:ClassName} {\n    $0\n}', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet },
+                            { label: 'public static void main', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'public static void main(String[] args) {\n    $0\n}', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet },
+                            { label: 'int', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'int' },
+                            { label: 'String', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'String' }
+                        ];
+                        return { suggestions: suggestions };
+                    }
+                });
+
+                // --- JavaScript Completions ---
+                monaco.languages.registerCompletionItemProvider('javascript', {
+                    provideCompletionItems: function(model, position) {
+                        return {
+                            suggestions: [
+                                {
+                                    label: 'kurs_ergebnis',
+                                    kind: monaco.languages.CompletionItemKind.Function,
+                                    documentation: 'Spezielle Kurs-Funktion für Ergebnisse',
+                                    insertText: 'kurs_ergebnis()'
+                                },
+                                {
+                                    label: 'console.log',
+                                    kind: monaco.languages.CompletionItemKind.Snippet,
+                                    insertText: 'console.log(${1:message});',
+                                    insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet
+                                }
+                            ]
+                        };
+                    }
+                });
+
+                var initialCode = document.getElementById('initialCode').value;
+                var language = '@Model.Language.ToLower()';
+                
+                editor = monaco.editor.create(document.getElementById('editor'), {
+                    value: initialCode,
+                    language: language,
+                    theme: 'vs-dark',
+                    automaticLayout: true,
+                    fontSize: 14,
+                    minimap: { enabled: false },
+                    suggestOnTriggerCharacters: true,
+                    parameterHints: { enabled: true }
+                });
+
+                // Background linting for all languages
+                var lintTimeout;
+                editor.onDidChangeModelContent(function() {
+                    clearTimeout(lintTimeout);
+                    lintTimeout = setTimeout(function() {
+                        submitAnswer(editor.getValue(), true); // silent lint
+                    }, 1200);
+                });
+            });
+
+            document.getElementById('runButton').addEventListener('click', function () {
+                submitAnswer(editor.getValue());
+            });
+        </script>
+    }
+    else
+    {
+        <script>
+            document.getElementById('submitQuiz').addEventListener('click', function () {
+                var selected = document.querySelector('input[name="quizChoice"]:checked');
+                if (!selected) {
+                    alert("Bitte wählen Sie eine Antwort aus.");
+                    return;
+                }
+                submitAnswer(selected.value);
+            });
+        </script>
+    }
+
+    <script>
+        function submitAnswer(answer, isSilent) {
+            var outputElement = document.getElementById('output');
+            var feedbackElement = document.getElementById('feedback');
+            var taskId = document.getElementById('taskId').value;
+            var statusBadge = document.getElementById('statusBadge');
+            
+            if (!isSilent) {
+                if (outputElement) outputElement.textContent = "> Überprüfe...\n";
+                feedbackElement.classList.add('d-none');
+            }
+
+            fetch('/Home/RunCode', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    code: answer,
+                    taskId: parseInt(taskId)
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!isSilent && outputElement) outputElement.textContent = data.output || "";
+                
+                // Set markers (errors) in editor
+                var markers = [];
+                var language = '@Model.Language.ToLower()';
+                
+                if (data.errors && data.errors.length > 0) {
+                    data.errors.forEach(err => {
+                        markers.push({
+                            startLineNumber: err.line,
+                            startColumn: 1,
+                            endLineNumber: err.line,
+                            endColumn: 1000,
+                            message: err.message,
+                            severity: err.isWarning ? monaco.MarkerSeverity.Warning : monaco.MarkerSeverity.Error
+                        });
+                    });
+                }
+                monaco.editor.setModelMarkers(editor.getModel(), language, markers);
+
+                if (!isSilent) {
+                    feedbackElement.classList.remove('d-none');
+                    feedbackElement.classList.remove('alert-success', 'alert-danger', 'alert-warning');
+                    
+                    if (data.success && data.validated) {
+                        feedbackElement.innerHTML = "<strong>Korrekt!</strong> Hervorragende Arbeit.";
+                        feedbackElement.classList.add('alert-success');
+                        if (statusBadge) {
+                            statusBadge.className = "badge bg-success p-2";
+                            statusBadge.innerHTML = '<i class="bi bi-check-circle"></i> Abgeschlossen';
+                        }
+                    } else if (data.success && data.type === "MultipleChoice") {
+                        feedbackElement.innerHTML = "<strong>Falsch.</strong> Versuchen Sie es noch einmal.";
+                        feedbackElement.classList.add('alert-danger');
+                    } else if (data.success) {
+                        feedbackElement.innerHTML = "<strong>Ausgeführt.</strong> Das Ergebnis ist noch nicht ganz richtig.";
+                        feedbackElement.classList.add('alert-warning');
+                    } else {
+                        feedbackElement.innerHTML = "<strong>Fehler!</strong> " + (data.error || "Fehler bei der Prüfung.");
+                        feedbackElement.classList.add('alert-danger');
+                    }
+                }
+            });
+        }
+    </script>
+}
