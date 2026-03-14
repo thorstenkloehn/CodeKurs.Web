@@ -36,7 +36,7 @@ CodeKurs.Web ist eine pädagogische ASP.NET Core MVC-Anwendung, die zum Lehren v
 
 ## Entwicklungsrichtlinien
 - **Datenbankmigrationen:** Verwenden Sie `dotnet ef migrations add <Name>` und `dotnet ef database update`, um Schemaänderungen zu verwalten.
-- **Seeding:** Aktualisieren Sie `ApplicationDbContext.OnModelCreating`, um Standardlektionen und -aufgaben hinzuzufügen oder zu ändern.
+- **Front Matter + Markdown:** Aktualisieren Sie Verzeichniss `lernen`, um Standardlektionen und -aufgaben hinzuzufügen oder zu ändern.
 - **Testcode:** Stellen Sie bei `Edu`-Aufgaben sicher, dass der `TestCode` eine `Main`-Methode enthält, die bei Erfolg `SUCCESS_ALL_TESTS_PASSED` ausgibt.
 - **Styling:** Befolgen Sie die standardmäßigen ASP.NET Core MVC-Konventionen. Verwenden Sie Bootstrap für das Styling.
 - **Fehlerbehandlung:** Kompilierungsfehler sollten `EditorError`-Objekten zugeordnet werden, um im Monaco-Editor angezeigt zu werden.
