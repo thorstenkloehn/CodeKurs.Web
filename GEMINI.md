@@ -1,58 +1,47 @@
-# Webbasierte Lernplattform für Programmiersprachen
+# CodeKurs.Web - Projektkontext
 
-## 1. Projektübersicht
-Eine interaktive Plattform zum Erlernen von Programmiersprachen mit direktem Feedback im Browser.
+## Projektübersicht
+CodeKurs.Web ist eine pädagogische ASP.NET Core MVC-Anwendung, die zum Lehren von Programmierung (C#, Java, JavaScript) entwickelt wurde. Sie bietet interaktive Lektionen, Programmieraufgaben und Echtzeit-Codeausführung mit Feedback.
 
-## Kursstruktur
-* Lektionen – Die wichtigsten Lernbausteine, die Aufgaben nach Themen gruppieren
-* Aufgaben – Die kleinsten Lerneinheiten.
-* Theorie – theoretisches Lernmaterial.
-* Multiple-Choice-Test – Quiz mit Einzel- oder Mehrfachauswahl.
-* Edu – eine Programmierübung, deren Ergebnisse durch Tests validiert wurden.
-* Output – eine Programmierübung, deren Ergebnisse durch den Output validiert werden.-+-+-+-+-+
-* Konfigurationsdateien
-* 
+## Technologie-Stack
+- **Framework:** ASP.NET Core 9.0 (MVC)
+- **Datenbank:** SQLite mit Entity Framework Core
+- **Code-Ausführung:**
+  - **C#:** In-Memory-Kompilierung mit Roslyn (`Microsoft.CodeAnalysis.CSharp`).
+  - **Java/JavaScript:** Ausführung externer Prozesse mit `javac` und `node`.
+- **Frontend:**
+  - Razor Views (Bootstrap-basiert)
+  - Monaco Editor für die Code-Eingabe.
+  - Vanilla JavaScript für Editor-Interaktionen.
 
-## 2. Kernfunktionen
-- **Kurserstellung:** Start eines neuen Kursprojekts.
-- **Übungsentwicklung:** Schreiben des Codes, der als Basis für die Übungen dient.
-- **Platzhalter:** Hinzufügen von interaktiven Platzhaltern, die die Lernenden ausfüllen müssen.
-- **Beschreibungen:** Bereitstellung von Kontext und Anweisungen mittels HTML oder Markdown.
-- **Automatisiertes Testen:** Erstellung benutzerdefinierter Tests zur automatischen Überprüfung der Lösungen.
-- **Interaktiver Editor:** Integration von Monaco Editor oder CodeMirror mit Unterstützung für Platzhalter ("Answer Placeholders"), die von Schülern ausgefüllt werden müssen.
-- **Lernmodule:** Strukturierte Lektionen mit verschiedenen Aufgaben-Typen: Theorie-Lektionen, Quizfragen (Multiple Choice) und Programmieraufgaben.
-- **Code-Ausführung & Validierung:** Ausführung von Benutzercode auf dem Server inklusive automatisierter Tests zur sofortigen Korrektur und Rückmeldung.
-- **Fortschrittsanzeige:** Dashboard für abgeschlossene Lektionen und Quizzes.
-- **Aufgabenformatierung:** Technischer Leitfaden zur Verbesserung von Aufgabenbeschreibungen unter Nutzung von HTML, Markdown, Code-Snippets, Hinweisen (Hints), Links und Bildern.
-## 3. Technischer Stack (Vorschlag)
-- **Frontend:** Bootstrap 5, Monaco Editor install npm herunterladen
-- **Backend:** ASP.NET Core MVC.
-- **Datenbank:** SQLite3 für Lernfortschritte.
-- **Infrastruktur:** Code-Laufzeiten auf lokalem Rechner testen.
-### Struktur und Funktionsweise
-#### 1. Code-Synchronisation
-- Der Kursersteller nutzt die Funktion **"Sync Files with Next Tasks"** 
-- Dies propagiert Code-Änderungen an alle nachfolgenden Aufgaben, um sicherzustellen, dass die Startpunkte konsistent sind.
+## Kern-Modelle
+- **Lesson:** Repräsentiert ein Lernmodul (z. B. „C# Einführung“).
+- **ProgrammingTask:** Eine einzelne Übung innerhalb einer Lektion.
+  - **TaskType:**
+    - `Theory`: Nur Textinhalt.
+    - `Programming`: Erfordert Code, der einer bestimmten `ExpectedOutput` entspricht.
+    - `Edu`: Erfordert Code, der einen versteckten `TestCode` (Unit-Tests) besteht.
+    - `MultipleChoice`: Quizbasierte Aufgaben.
 
-#### 2. Platzhalter-Abhängigkeiten (Placeholder Dependencies)
-Um den vom Lernenden geschriebenen Code von einer Aufgabe in die nächste zu übernehmen, werden Abhängigkeiten definiert:
-- **Format**: `<Lektionsname>#<Aufgabenname>#<Dateipfad>#<Dateiname>#<Platzhalternummer>`
-- Dies bewirkt, dass der Inhalt eines Platzhalters automatisch in den entsprechenden Platzhalter der Folgeaufgabe kopiert wird.
+## Wichtige Dienste
+- **CodeExecutorService:** Verarbeitet die Kompilierungs- und Ausführungslogik für verschiedene Sprachen.
 
----
+## Projektstruktur
+- `Controllers/`: Standard-MVC-Controller (Admin, Dashboard, Home).
+- `Models/`: Daten- und ViewModels.
+- `Views/`: Razor-Views für die Benutzeroberfläche.
+- `Data/`: DB-Kontext und Seeding-Logik.
+- `Services/`: Geschäftslogik, insbesondere Code-Ausführung.
+- `wwwroot/`: Statische Assets, einschließlich der Monaco-Editor-Konfiguration.
 
-### Konfigurationsschritte für Ersteller
-1. **Aufgaben erstellen**: Definieren von `task.html`/`task.md` für Beschreibungen sowie Exercise- und Test-Dateien.
-2. **Antwort-Platzhalter hinzufügen**: Über das Kontextmenü ("Add Answer Placeholder") Stellen im Code markieren, die vom Lernenden gelöst werden müssen.
-3. **Tests schreiben**: Jede Aufgabe benötigt spezifische Tests, die den Fortschritt in diesem Schritt validieren.
-4. **Synchronisation prüfen**: Regelmäßiges Abgleichen der Dateien, um sicherzustellen, dass spätere Aufgaben die Lösungen der früheren enthalten (sofern gewünscht).
-## 4. Nächste Schritte
-1. Anforderungsanalyse und Wireframing.
-2. Setup des Repositories (Monorepo-Struktur).
-3. Implementierung des Editors und einer einfachen Code-Validierung.
+## Entwicklungsrichtlinien
+- **Datenbankmigrationen:** Verwenden Sie `dotnet ef migrations add <Name>` und `dotnet ef database update`, um Schemaänderungen zu verwalten.
+- **Seeding:** Aktualisieren Sie `ApplicationDbContext.OnModelCreating`, um Standardlektionen und -aufgaben hinzuzufügen oder zu ändern.
+- **Testcode:** Stellen Sie bei `Edu`-Aufgaben sicher, dass der `TestCode` eine `Main`-Methode enthält, die bei Erfolg `SUCCESS_ALL_TESTS_PASSED` ausgibt.
+- **Styling:** Befolgen Sie die standardmäßigen ASP.NET Core MVC-Konventionen. Verwenden Sie Bootstrap für das Styling.
+- **Fehlerbehandlung:** Kompilierungsfehler sollten `EditorError`-Objekten zugeordnet werden, um im Monaco-Editor angezeigt zu werden.
 
-## eigene Kurse erstellen
-* Editor für Lektion,Task,Test,zu schreiben
-* Import yaml
-* Export yaml
+## Gemeinsame Workflows
+- **Hinzufügen einer neuen Aufgabe:** Fügen Sie die Aufgabe zur Seeding-Logik des `ApplicationDbContext` hinzu und definieren Sie `InitialCode`, `ExpectedOutput` (oder `TestCode`) sowie `RequiredKeywords`.
+- **Anpassen der Benutzeroberfläche:** Bearbeiten Sie die entsprechende `.cshtml`-Datei in `Views/`. Die Editor-Logik befindet sich hauptsächlich in `wwwroot/js/site.js`.
 
