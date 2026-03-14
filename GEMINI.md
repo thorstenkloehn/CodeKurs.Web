@@ -30,7 +30,7 @@ CodeKurs.Web ist eine pädagogische ASP.NET Core MVC-Anwendung, die zum Lehren v
 - `Controllers/`: Standard-MVC-Controller (Admin, Dashboard, Home).
 - `Models/`: Daten- und ViewModels.
 - `Views/`: Razor-Views für die Benutzeroberfläche.
-- `Data/`: DB-Kontext und Seeding-Logik.
+- `Data/`: DB-Kontext und Front Matter + Markdown.
 - `Services/`: Geschäftslogik, insbesondere Code-Ausführung.
 - `wwwroot/`: Statische Assets, einschließlich der Monaco-Editor-Konfiguration.
 
@@ -42,6 +42,6 @@ CodeKurs.Web ist eine pädagogische ASP.NET Core MVC-Anwendung, die zum Lehren v
 - **Fehlerbehandlung:** Kompilierungsfehler sollten `EditorError`-Objekten zugeordnet werden, um im Monaco-Editor angezeigt zu werden.
 
 ## Gemeinsame Workflows
-- **Hinzufügen einer neuen Aufgabe:** Fügen Sie die Aufgabe zur Seeding-Logik des `ApplicationDbContext` hinzu und definieren Sie `InitialCode`, `ExpectedOutput` (oder `TestCode`) sowie `RequiredKeywords`.
+- **Hinzufügen einer neuen Aufgabe:** Fügen Sie die Aufgabe zur Front Matter + Markdown des `lernen` hinzu und definieren Sie `InitialCode`, `ExpectedOutput` (oder `TestCode`) sowie `RequiredKeywords`.
 - **Anpassen der Benutzeroberfläche:** Bearbeiten Sie die entsprechende `.cshtml`-Datei in `Views/`. Die Editor-Logik befindet sich hauptsächlich in `wwwroot/js/site.js`.
 
