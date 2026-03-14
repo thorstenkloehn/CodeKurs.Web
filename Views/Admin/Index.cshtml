@@ -1,0 +1,50 @@
+@model IEnumerable<CodeKurs.Web.Models.ProgrammingTask>
+@{
+    ViewData["Title"] = "Kurs-Editor (Admin)";
+}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="bi bi-pencil-square"></i> Kurs-Editor</h1>
+        <a asp-action="Create" class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-plus-lg"></i> Neue Aufgabe
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-4">Titel</th>
+                        <th>Sprache</th>
+                        <th>Typ</th>
+                        <th class="text-end pe-4">Aktionen</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-4 fw-bold">@item.Title</td>
+                            <td>@item.Language.ToUpper()</td>
+                            <td>
+                                <span class="badge @(item.Type == TaskType.Programming ? "bg-info text-dark" : "bg-warning text-dark")">
+                                    @(item.Type == TaskType.Programming ? "Programmierung" : "Quiz")
+                                </span>
+                            </td>
+                            <td class="text-end pe-4">
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Bearbeiten</a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Löschen</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+}

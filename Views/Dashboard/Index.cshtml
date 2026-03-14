@@ -85,9 +85,25 @@
                                         <div class="fw-bold">@task.Title</div>
                                     </td>
                                     <td>
-                                        <span class="badge @(task.Type == TaskType.Programming ? "bg-info text-dark" : "bg-warning text-dark")">
-                                            @(task.Type == TaskType.Programming ? "Programmierung" : "Quiz")
-                                        </span>
+                                        @{
+                                            var typeLabel = task.Type switch {
+                                                TaskType.Programming => "Programmierung",
+                                                TaskType.Edu => "Edu (Tests)",
+                                                TaskType.Output => "Output-Prüfung",
+                                                TaskType.Theory => "Theorie",
+                                                TaskType.MultipleChoice => "Quiz",
+                                                _ => "Unbekannt"
+                                            };
+                                            var typeClass = task.Type switch {
+                                                TaskType.Programming => "bg-info text-dark",
+                                                TaskType.Edu => "bg-primary",
+                                                TaskType.Output => "bg-success",
+                                                TaskType.Theory => "bg-secondary",
+                                                TaskType.MultipleChoice => "bg-warning text-dark",
+                                                _ => "bg-dark"
+                                            };
+                                        }
+                                        <span class="badge @typeClass">@typeLabel</span>
                                     </td>
                                     <td>
                                         @if (task.IsCompleted)

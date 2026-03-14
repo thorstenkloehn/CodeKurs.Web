@@ -1,0 +1,24 @@
+@model CodeKurs.Web.Models.ProgrammingTask
+@{
+    ViewData["Title"] = "Aufgabe löschen";
+}
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card border-0 shadow-sm p-4">
+                <h2 class="text-danger">Aufgabe löschen</h2>
+                <hr />
+                <p>Bist du sicher, dass du die Aufgabe <strong>@Model.Title</strong> löschen möchtest?</p>
+                
+                <form asp-action="Delete">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-danger px-4 rounded-pill">Ja, Löschen</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary px-4 rounded-pill ms-2">Abbrechen</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

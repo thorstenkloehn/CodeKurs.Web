@@ -11,6 +11,6 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "monaco-editor": "^0.55.1"
+    "monaco-editor": "0.55.1"
   }
 }

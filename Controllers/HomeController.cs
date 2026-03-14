@@ -20,22 +20,41 @@ public class HomeController : Controller
         _context = context;
     }
 
-    public async Task<IActionResult> Index(int? id)
+    public async Task<IActionResult> Index(int? id, string? language)
     {
-        // Wenn keine ID übergeben wurde, nimm die erste Aufgabe
-        var task = id.HasValue 
-            ? await _context.Tasks.FirstOrDefaultAsync(t => t.Id == id.Value)
-            : await _context.Tasks.FirstOrDefaultAsync();
+        ProgrammingTask? task = null;
+
+        if (id.HasValue) 
+        {
+            task = await _context.Tasks.Include(t => t.Lesson).FirstOrDefaultAsync(t => t.Id == id.Value);
+        }
+        else if (!string.IsNullOrEmpty(language))
+        {
+            task = await _context.Tasks.Include(t => t.Lesson)
+                .Where(t => t.Language == language)
+                .OrderBy(t => t.LessonId).ThenBy(t => t.Order)
+                .FirstOrDefaultAsync();
+        }
+        else
+        {
+            task = await _context.Tasks.Include(t => t.Lesson)
+                .OrderBy(t => t.LessonId).ThenBy(t => t.Order)
+                .FirstOrDefaultAsync();
+        }
 
         if (task == null)
         {
-            return NotFound("Aufgabe nicht gefunden.");
+            return RedirectToAction("CourseSelection");
         }
 
-        // Alle Aufgaben gruppiert nach Sprache für die Navigation laden
-        ViewBag.GroupedTasks = await _context.Tasks
-            .GroupBy(t => t.Language)
-            .ToDictionaryAsync(g => g.Key, g => g.Select(t => new TaskNavItem { Id = t.Id, Title = t.Title, Type = t.Type }).ToList());
+        // Filter: Nur Lektionen der GLEICHEN Sprache wie die aktuelle Aufgabe laden
+        ViewBag.Lessons = await _context.Lessons
+            .Include(l => l.Tasks)
+            .Where(l => l.Language == task.Language)
+            .OrderBy(l => l.Order)
+            .ToListAsync();
+        
+        ViewBag.CurrentLanguage = task.Language;
         
         // Fortschritt laden
         var progress = await _context.Progress
@@ -46,8 +65,31 @@ public class HomeController : Controller
             task.InitialCode = progress.LastSubmittedCode;
             ViewBag.IsCompleted = progress.IsCompleted;
         }
+        else if (!string.IsNullOrEmpty(task.PlaceholderDependency))
+        {
+            if (int.TryParse(task.PlaceholderDependency, out int prevTaskId))
+            {
+                var prevProgress = await _context.Progress
+                    .FirstOrDefaultAsync(p => p.TaskId == prevTaskId && p.UserId == "guest");
+                
+                if (prevProgress != null && !string.IsNullOrEmpty(prevProgress.LastSubmittedCode))
+                {
+                    task.InitialCode = prevProgress.LastSubmittedCode;
+                }
+            }
+        }
 
         return View(task);
+    }
+
+    public async Task<IActionResult> CourseSelection()
+    {
+        var languages = await _context.Lessons
+            .Select(l => l.Language)
+            .Distinct()
+            .ToListAsync();
+            
+        return View(languages);
     }
 
     [HttpPost]
@@ -67,9 +109,8 @@ public class HomeController : Controller
             bool validated = false;
             object? errors = null;
 
-            if (task.Type == TaskType.Programming)
+            if (task.Type == TaskType.Programming || task.Type == TaskType.Edu || task.Type == TaskType.Output)
             {
-                // Keyword-Prüfung
                 if (!string.IsNullOrEmpty(task.RequiredKeywords))
                 {
                     var missing = task.RequiredKeywords.Split(',')
@@ -88,19 +129,57 @@ public class HomeController : Controller
                     }
                 }
 
-                var execResult = await _codeExecutor.ExecuteAsync(request.Code, task.Language);
+                string codeToExecute = request.Code;
+                if (task.Type == TaskType.Edu && !string.IsNullOrEmpty(task.TestCode))
+                {
+                    codeToExecute = $"{request.Code}\n\n{task.TestCode}";
+                }
+
+                var execResult = await _codeExecutor.ExecuteAsync(codeToExecute, task.Language);
                 output = execResult.Output;
                 errors = execResult.Errors;
-                validated = output.Trim().Equals(task.ExpectedOutput.Trim(), StringComparison.OrdinalIgnoreCase);
+
+                if (task.Type == TaskType.Edu)
+                {
+                    validated = output.Contains("SUCCESS_ALL_TESTS_PASSED") && !output.Contains("Laufzeitfehler");
+                }
+                else
+                {
+                    validated = output.Trim().Equals(task.ExpectedOutput.Trim(), StringComparison.OrdinalIgnoreCase);
+                }
             }
             else if (task.Type == TaskType.MultipleChoice)
             {
                 validated = request.Code.Trim().Equals(task.CorrectAnswer?.Trim(), StringComparison.OrdinalIgnoreCase);
                 output = validated ? "Richtig!" : "Leider falsch.";
             }
+            else if (task.Type == TaskType.Theory)
+            {
+                validated = true;
+                output = "Lektion abgeschlossen!";
+            }
 
-            // Fortschritt speichern
-            // ... (restlicher Code unverändert)
+            var progress = await _context.Progress
+                .FirstOrDefaultAsync(p => p.TaskId == task.Id && p.UserId == "guest");
+            
+            if (progress == null)
+            {
+                progress = new UserProgress
+                {
+                    TaskId = task.Id,
+                    UserId = "guest",
+                    LastSubmittedCode = request.Code ?? string.Empty,
+                    IsCompleted = validated,
+                    LastUpdated = DateTime.UtcNow
+                };
+                _context.Progress.Add(progress);
+            }
+            else
+            {
+                progress.LastSubmittedCode = request.Code ?? string.Empty;
+                if (validated) progress.IsCompleted = true;
+                progress.LastUpdated = DateTime.UtcNow;
+            }
             
             await _context.SaveChangesAsync();
 
