@@ -3,6 +3,7 @@ using System;
 using CodeKurs.Web.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CodeKurs.Web.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260314182519_AddMoreTasks")]
+    partial class AddMoreTasks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -45,50 +48,50 @@ namespace CodeKurs.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 100,
-                            Description = "<p>Lerne Java kennen.</p><p>Java ist eine plattformunabhängige Sprache.</p>\n",
-                            Language = "java",
+                            Id = 1,
+                            Description = "Lerne die Grundlagen von C#.",
+                            Language = "csharp",
                             Order = 1,
-                            Title = "Java Einstieg"
+                            Title = "C# Einführung"
                         },
                         new
                         {
-                            Id = 101,
-                            Description = "<p>Lerne Entscheidungen im Code zu treffen.</p><p>In dieser Lektion lernst du <code>if</code> und <code>else</code> kennen.</p>\n",
+                            Id = 2,
+                            Description = "If-Else und Logik.",
                             Language = "csharp",
                             Order = 2,
                             Title = "Kontrollstrukturen"
                         },
                         new
                         {
-                            Id = 102,
-                            Description = "<p>Objektorientierte Programmierung.</p><p>Alles in C# findet in Klassen statt.</p>\n",
-                            Language = "csharp",
-                            Order = 4,
-                            Title = "Klassen & Methoden"
-                        },
-                        new
-                        {
-                            Id = 103,
-                            Description = "<p>Wiederhole Aufgaben effizient.</p><p>Schleifen helfen dir, Aufgaben mehrfach auszuführen.</p>\n",
+                            Id = 3,
+                            Description = "Wiederholungen in C#.",
                             Language = "csharp",
                             Order = 3,
                             Title = "Schleifen"
                         },
                         new
                         {
-                            Id = 104,
-                            Description = "<p>Ein Einstieg in die Welt von C#.</p><p>In dieser Lektion lernst du die ersten Schritte in C#.</p>\n",
+                            Id = 4,
+                            Description = "Logik in Klassen kapseln.",
                             Language = "csharp",
-                            Order = 1,
-                            Title = "C# Grundlagen"
+                            Order = 4,
+                            Title = "Klassen & Methoden"
                         },
                         new
                         {
-                            Id = 105,
-                            Description = "<p>Programmieren für das Web.</p><p>JavaScript erweckt Webseiten zum Leben.</p>\n",
+                            Id = 5,
+                            Description = "Lerne Java kennen.",
+                            Language = "java",
+                            Order = 5,
+                            Title = "Java Einstieg"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Description = "Programmieren für das Web.",
                             Language = "javascript",
-                            Order = 1,
+                            Order = 6,
                             Title = "JavaScript Einführung"
                         });
                 });
@@ -152,38 +155,89 @@ namespace CodeKurs.Web.Migrations
                     b.HasData(
                         new
                         {
-                            Id = 1000,
-                            Description = "Schreibe 'Hallo Welt!' in Java.",
-                            ExpectedOutput = "Hallo Welt!",
-                            InitialCode = "public class Program {\n    public static void main(String[] args) {\n        // Dein Code hier\n    }\n}",
-                            Language = "java",
-                            LessonId = 100,
+                            Id = 1,
+                            Description = "C# ist eine moderne Programmiersprache von Microsoft.",
+                            ExpectedOutput = "",
+                            InitialCode = "",
+                            Language = "csharp",
+                            LessonId = 1,
                             Order = 1,
-                            RequiredKeywords = "System.out.println",
-                            Title = "Java: Hallo Welt",
-                            Type = 1
+                            Title = "Theorie: Was ist C#?",
+                            Type = 0
                         },
                         new
                         {
-                            Id = 1001,
-                            Description = "Prüfe, ob x (10) > 5 ist und gib 'Ja' aus.",
-                            ExpectedOutput = "Ja",
-                            InitialCode = "public class Program {\n    public static void main(String[] args) {\n        int x = 10;\n        // Dein Code hier\n    }\n}",
-                            Language = "java",
-                            LessonId = 100,
+                            Id = 2,
+                            Description = "Schreibe 'Hallo Welt!' auf die Konsole.",
+                            ExpectedOutput = "Hallo Welt!",
+                            InitialCode = "using System;\n\npublic class Program\n{\n	public static void Main()\n	{\n		// Dein Code hier\n	}\n}",
+                            Language = "csharp",
+                            LessonId = 1,
                             Order = 2,
-                            RequiredKeywords = "if",
-                            Title = "Java: If-Else",
+                            RequiredKeywords = "Console.WriteLine",
+                            Title = "Hallo Welt (C#)",
                             Type = 1
                         },
                         new
                         {
-                            Id = 1002,
-                            Description = "Prüfe, ob die Variable 'zahl' positiv oder negativ ist. Gib 'Positiv' oder 'Negativ' aus.",
+                            Id = 3,
+                            Description = "Erstelle 'alter' mit Wert 25.",
+                            ExpectedOutput = "25",
+                            InitialCode = "using System;\n\npublic class Program\n{\n	public static void Main()\n	{\n		// Dein Code hier\n	}\n}",
+                            Language = "csharp",
+                            LessonId = 1,
+                            Order = 3,
+                            RequiredKeywords = "int,alter",
+                            Title = "Variablen: int",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Description = "Erstelle eine Variable 'name' vom Typ string mit dem Wert 'C# Profi' und gib sie aus.",
+                            ExpectedOutput = "C# Profi",
+                            InitialCode = "using System;\n\npublic class Program\n{\n	public static void Main()\n	{\n		// Dein Code hier\n	}\n}",
+                            Language = "csharp",
+                            LessonId = 1,
+                            Order = 4,
+                            RequiredKeywords = "string,name",
+                            Title = "Variablen: string",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 11,
+                            Description = "Erstelle eine Variable 'preis' vom Typ double mit dem Wert 9.99 und gib sie aus.",
+                            ExpectedOutput = "9.99",
+                            InitialCode = "using System;\n\npublic class Program\n{\n	public static void Main()\n	{\n		// Dein Code hier\n	}\n}",
+                            Language = "csharp",
+                            LessonId = 1,
+                            Order = 5,
+                            RequiredKeywords = "double,preis",
+                            Title = "Variablen: double",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 12,
+                            Description = "Erstelle ein int-Array 'zahlen' mit den Werten 1, 2, 3 und gib das erste Element aus.",
+                            ExpectedOutput = "1",
+                            InitialCode = "using System;\n\npublic class Program\n{\n	public static void Main()\n	{\n		// Dein Code hier\n	}\n}",
+                            Language = "csharp",
+                            LessonId = 1,
+                            Order = 6,
+                            RequiredKeywords = "int[],zahlen",
+                            Title = "Arrays: Einführung",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Description = "Prüfe, ob 'zahl' (-5) positiv ist.",
                             ExpectedOutput = "Negativ",
                             InitialCode = "using System;\n\npublic class Program\n{\n	public static void Main()\n	{\n		int zahl = -5;\n		// Dein Code hier\n	}\n}",
                             Language = "csharp",
-                            LessonId = 101,
+                            LessonId = 2,
                             Order = 1,
                             RequiredKeywords = "if,else",
                             Title = "Logik: Positiv/Negativ",
@@ -191,12 +245,25 @@ namespace CodeKurs.Web.Migrations
                         },
                         new
                         {
-                            Id = 1003,
-                            Description = "Erstelle eine Klasse 'Calculator' mit einer statischen Methode 'Add(int a, int b)'.",
+                            Id = 5,
+                            Description = "Berechne Summe 1-5.",
+                            ExpectedOutput = "15",
+                            InitialCode = "using System;\n\npublic class Program\n{\n	public static void Main()\n	{\n		int summe = 0;\n		// Nutze eine for-Schleife\n		Console.WriteLine(summe);\n	}\n}",
+                            Language = "csharp",
+                            LessonId = 3,
+                            Order = 1,
+                            RequiredKeywords = "for",
+                            Title = "For-Schleife: Summe",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Description = "Erstelle eine Klasse 'Calculator' mit einer statischen Methode 'Add(int a, int b)', die die Summe zurückgibt.",
                             ExpectedOutput = "",
                             InitialCode = "public class Calculator \n{\n    // Hier deine Methode\n}",
                             Language = "csharp",
-                            LessonId = 102,
+                            LessonId = 4,
                             Order = 1,
                             RequiredKeywords = "class,Calculator,static,int",
                             TestCode = "public class TestRunner {\n    public static void Main() {\n        if(Calculator.Add(5, 5) == 10 && Calculator.Add(-1, 1) == 0)\n            System.Console.WriteLine(\"SUCCESS_ALL_TESTS_PASSED\");\n        else\n            throw new System.Exception(\"Tests fehlgeschlagen.\");\n    }\n}",
@@ -205,50 +272,52 @@ namespace CodeKurs.Web.Migrations
                         },
                         new
                         {
-                            Id = 1004,
-                            Description = "Berechne die Summe der Zahlen 1 bis 5.",
-                            ExpectedOutput = "15",
-                            InitialCode = "using System;\n\npublic class Program\n{\n	public static void Main()\n	{\n		int summe = 0;\n		// Nutze eine for-Schleife\n		Console.WriteLine(summe);\n	}\n}",
-                            Language = "csharp",
-                            LessonId = 103,
-                            Order = 1,
-                            RequiredKeywords = "for",
-                            Title = "For-Schleife: Summe",
-                            Type = 1
-                        },
-                        new
-                        {
-                            Id = 1005,
-                            Description = "C# ist eine objektorientierte Sprache von Microsoft.",
+                            Id = 9,
+                            Description = "Erstelle eine Instanz der Klasse 'Person', setze den Namen auf 'Max' und gib das Objekt zurück.",
                             ExpectedOutput = "",
-                            InitialCode = "",
+                            InitialCode = "public class Person {\n    public string Name { get; set; }\n}\n\npublic class Program {\n    public static Person CreatePerson() {\n        // Erstelle hier eine neue Person und setze den Namen\n        return null;\n    }\n}",
                             Language = "csharp",
-                            LessonId = 104,
-                            Order = 1,
-                            Title = "Was ist C#?",
-                            Type = 0
+                            LessonId = 4,
+                            Order = 2,
+                            RequiredKeywords = "new,Person,Max",
+                            TestCode = "public class TestRunner {\n    public static void Main() {\n        var p = Program.CreatePerson();\n        if(p != null && p.Name == \"Max\")\n            System.Console.WriteLine(\"SUCCESS_ALL_TESTS_PASSED\");\n        else\n            throw new System.Exception(\"Der Name ist nicht 'Max' oder das Objekt wurde nicht erstellt.\");\n    }\n}",
+                            Title = "Edu: Objekte erstellen",
+                            Type = 3
                         },
                         new
                         {
-                            Id = 1006,
-                            Description = "Gib 'Hallo Welt!' aus.",
+                            Id = 6,
+                            Description = "Schreibe 'Hallo Welt!' in Java.",
                             ExpectedOutput = "Hallo Welt!",
-                            InitialCode = "using System;\n\npublic class Program\n{\n	public static void Main()\n	{\n		// Dein Code\n	}\n}",
-                            Language = "csharp",
-                            LessonId = 104,
-                            Order = 2,
-                            RequiredKeywords = "Console.WriteLine",
-                            Title = "Hallo Welt",
+                            InitialCode = "public class Program {\n    public static void main(String[] args) {\n        // Dein Code hier\n    }\n}",
+                            Language = "java",
+                            LessonId = 5,
+                            Order = 1,
+                            RequiredKeywords = "System.out.println",
+                            Title = "Java: Hallo Welt",
                             Type = 1
                         },
                         new
                         {
-                            Id = 1007,
+                            Id = 13,
+                            Description = "Prüfe, ob die Variable 'x' (10) größer als 5 ist und gib 'Ja' aus.",
+                            ExpectedOutput = "Ja",
+                            InitialCode = "public class Program {\n    public static void main(String[] args) {\n        int x = 10;\n        // Dein Code hier\n    }\n}",
+                            Language = "java",
+                            LessonId = 5,
+                            Order = 2,
+                            RequiredKeywords = "if",
+                            Title = "Java: If-Else",
+                            Type = 1
+                        },
+                        new
+                        {
+                            Id = 7,
                             Description = "Schreibe 'Hallo Welt!' in JavaScript.",
                             ExpectedOutput = "Hallo Welt!",
                             InitialCode = "console.log();",
                             Language = "javascript",
-                            LessonId = 105,
+                            LessonId = 6,
                             Order = 1,
                             RequiredKeywords = "console.log",
                             Title = "JS: Hallo Welt",
@@ -256,12 +325,12 @@ namespace CodeKurs.Web.Migrations
                         },
                         new
                         {
-                            Id = 1008,
-                            Description = "Erstelle eine Funktion 'begruessung', die 'Hallo' zurückgibt.",
+                            Id = 14,
+                            Description = "Erstelle eine Funktion 'begruessung', die 'Hallo' zurückgibt und rufe sie in console.log auf.",
                             ExpectedOutput = "Hallo",
                             InitialCode = "function begruessung() {\n    // Dein Code hier\n}\nconsole.log(begruessung());",
                             Language = "javascript",
-                            LessonId = 105,
+                            LessonId = 6,
                             Order = 2,
                             RequiredKeywords = "function,return",
                             Title = "JS: Funktionen",
