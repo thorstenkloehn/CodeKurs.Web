@@ -4,7 +4,7 @@
 CodeKurs.Web ist eine pädagogische ASP.NET Core MVC-Anwendung, die zum Lehren von Programmierung (C#, Java, JavaScript) entwickelt wurde. Sie bietet interaktive Lektionen, Programmieraufgaben und Echtzeit-Codeausführung mit Feedback.
 
 ## Technologie-Stack
-- **Framework:** ASP.NET Core 9.0 (MVC)
+- **Framework:** ASP.NET Core 10.0 (MVC)
 - **Datenbank:** SQLite mit Entity Framework Core
 - **Code-Ausführung:**
   - **C#:** In-Memory-Kompilierung mit Roslyn (`Microsoft.CodeAnalysis.CSharp`).
