@@ -1,0 +1,48 @@
+@model List<CodeKurs.Web.Controllers.RuntimeStatus>
+
+<div class="container mt-4">
+    <h1>Systemdiagnose (Lokale Umgebung)</h1>
+    <p>Hier siehst du, welche Programmiersprachen auf deinem Rechner für die Übungen installiert sind.</p>
+    
+    <table class="table table-striped mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>Runtime / Compiler</th>
+                <th>Status</th>
+                <th>Version</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var runtime in Model)
+            {
+                <tr>
+                    <td>@runtime.Name</td>
+                    <td>
+                        @if (runtime.Installed)
+                        {
+                            <span class="badge bg-success">Installiert</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Nicht gefunden</span>
+                        }
+                    </td>
+                    <td>@(runtime.Version ?? "N/A")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="mt-4 p-3 border rounded bg-light">
+        <h3>Hinweis für Offline-Betrieb</h3>
+        <p>Um Übungen in einer bestimmten Sprache lokal auszuführen, muss der entsprechende Compiler oder Interpreter in deinem System-Pfad (PATH) hinterlegt sein.</p>
+        <ul>
+            <li><strong>C#:</strong> Läuft über den .NET SDK (bereits vorhanden, da die Web-App läuft).</li>
+            <li><strong>C/C++:</strong> Installiere GCC/G++ (z.B. MinGW auf Windows oder build-essential auf Linux).</li>
+            <li><strong>Java:</strong> Installiere das JDK (java und javac müssen verfügbar sein).</li>
+            <li><strong>Python, Node, PHP, Go, Rust:</strong> Installiere die jeweilige Laufzeitumgebung von der offiziellen Website.</li>
+        </ul>
+    </div>
+    
+    <a asp-action="Index" class="btn btn-primary mt-3">Zurück zur Kursübersicht</a>
+</div>

@@ -220,11 +220,46 @@ public class HomeController : Controller
         return View();
     }
 
+    public async Task<IActionResult> Diagnostics()
+    {
+        var runtimes = new List<RuntimeStatus>();
+        string[] binaries = { "java", "javac", "python", "php", "go", "gcc", "g++", "rustc", "node" };
+
+        foreach (var binary in binaries)
+        {
+            try
+            {
+                var startInfo = new System.Diagnostics.ProcessStartInfo(binary, "--version")
+                {
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                using var proc = System.Diagnostics.Process.Start(startInfo);
+                await proc!.WaitForExitAsync();
+                runtimes.Add(new RuntimeStatus { Name = binary, Installed = proc.ExitCode == 0, Version = await proc.StandardOutput.ReadLineAsync() });
+            }
+            catch
+            {
+                runtimes.Add(new RuntimeStatus { Name = binary, Installed = false });
+            }
+        }
+
+        return View(runtimes);
+    }
+
     [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public IActionResult Error()
     {
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
+}
+
+public class RuntimeStatus
+{
+    public string Name { get; set; } = "";
+    public bool Installed { get; set; }
+    public string? Version { get; set; }
 }
 
 public class CodeRequest

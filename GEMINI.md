@@ -6,10 +6,7 @@ Dieses Dokument bietet grundlegenden Kontext und Mandate für das Projekt **Code
 CodeKurs.Web ist eine Webanwendung für interaktive Programmierkurse. Sie ermöglicht es Benutzern, Theorie zu lesen, Programmieraufgaben direkt im Browser zu lösen (unter Verwendung des Monaco Editors) und ihren Fortschritt zu verfolgen.
 
 ## Tech-Stack
-- **Backend:** C# / ASP.NET Core 10.0 MVC, Entity Framework Core mit SQLite.
-- **Content Parsing:** `Markdig` (Markdown zu HTML), `YamlDotNet` (YAML Frontmatter).
-- **Code-Ausführung:** `Microsoft.CodeAnalysis.CSharp.Scripting` (Roslyn) für C#, und externe Prozessausführung für Java (`javac`/`java`) und JavaScript (`node`).
-- **Frontend:** Bootstrap 5, Monaco Editor, jQuery (für Aufgabenübermittlung und Validierung).
+* Visual Studio code Erweiterung 
 
 ## Architektonische Kernmuster
 - **Datenbank-Seeding:** Lektionen und Programmieraufgaben werden primär über Markdown-Dateien im Verzeichnis `lernen/` verwaltet. Beim Anwendungsstart (konfiguriert in `Program.cs` und `ApplicationDbContext.cs`) werden diese Dateien analysiert und ihr Inhalt in die SQLite-Datenbank eingepflegt.

@@ -17,44 +17,40 @@ Dieses Projekt ist für die **lokale Ausführung** konzipiert. Es dient als Prot
 
 Bevor Sie das Projekt starten, stellen Sie sicher, dass folgende Software installiert ist:
 
-- [.NET SDK 8.0](https://dotnet.microsoft.com/download) (oder höher)
-- [Node.js & npm](https://nodejs.org/) (für die Verwaltung der Frontend-Bibliotheken)
+- [.NET SDK 10.0](https://dotnet.microsoft.com/download)
+- [Node.js & npm](https://nodejs.org/) (Nur einmalig für `npm install` benötigt)
+
+### Lokale Compiler (WICHTIG für Übungen)
+
+Damit die Übungen in den verschiedenen Sprachen (C, C++, Java, Python, etc.) lokal ausgeführt werden können, müssen die jeweiligen Compiler auf Ihrem Rechner installiert und im System-Pfad (`PATH`) erreichbar sein.
+
+Nutzen Sie die **Diagnose-Seite** in der Anwendung (`/Home/Diagnostics`), um zu prüfen, welche Sprachen auf Ihrem System bereits unterstützt werden.
 
 ## 🔧 Installation & Setup
 
-Befolgen Sie diese Schritte, um die Anwendung lokal auszuführen:
+Befolgen Sie diese Schritte, um die Anwendung lokal ohne Docker auszuführen:
 
 1. **Repository klonen oder herunterladen:**
    ```bash
-   git clone <repository-url>
-   cd codekurs/src/CodeKurs.Web
+   cd CodeKurs.Web
    ```
 
 2. **Frontend-Abhängigkeiten installieren:**
-   Dies lädt den Monaco-Editor und andere benötigte Pakete herunter.
+   (Nur nötig, falls `wwwroot/lib/monaco-editor` noch nicht existiert)
    ```bash
    npm install
    ```
 
-3. **.NET Abhängigkeiten wiederherstellen:**
-   ```bash
-   dotnet restore
-   ```
-
-4. **Datenbank initialisieren (optional):**
-   Die SQLite-Datenbank `codekurs.db` wird beim ersten Start automatisch erstellt, falls sie noch nicht existiert.
-
-5. **Anwendung starten:**
+3. **Anwendung starten:**
    ```bash
    dotnet run
    ```
 
-6. **Browser öffnen:**
-   Navigieren Sie zu `https://localhost:5001` oder `http://localhost:5000` (die genauen URLs werden im Terminal angezeigt).
+4. **Browser öffnen:**
+   Navigieren Sie zur im Terminal angezeigten URL (meist `https://localhost:7xxx` oder `http://localhost:5xxx`).
 
 ## 🏗 Technischer Stack
 
-- **Backend:** ASP.NET Core MVC
-- **Datenbank:** SQLite3 (Entity Framework Core)
-- **Frontend:** Bootstrap 5, Monaco Editor
-- **Sprachen:** C#, HTML, CSS, JavaScript
+- **Backend:** ASP.NET Core 10.0 MVC
+- **Datenbank:** SQLite (Lokal, Datei: `codekurs.db`)
+- **Code Execution:** Lokale Prozesse (kein Docker-Sandboxing für maximale Performance im Offline-Modus)

@@ -1,0 +1,35 @@
+{
+	"folders": [
+		{
+			"path": ".",
+			"name": "CodeKurs - Web App & Source"
+		},
+		{
+			"path": "lernen",
+			"name": "Kursinhalte (Markdown)"
+		}
+	],
+	"settings": {
+		"dotnet.server.useOmnisharp": true,
+		"files.exclude": {
+			"**/.git": true,
+			"**/.DS_Store": true,
+			"**/bin": true,
+			"**/obj": true,
+			"**/*.db": false
+		},
+		"editor.formatOnSave": true,
+		"workbench.colorCustomizations": {
+			"activityBar.background": "#1e1e1e",
+			"titleBar.activeBackground": "#007acc",
+			"titleBar.activeForeground": "#ffffff"
+		}
+	},
+	"extensions": {
+		"recommendations": [
+			"ms-dotnettools.csharp",
+			"ms-dotnettools.vscode-dotnet-runtime",
+			"yzhang.markdown-all-in-one"
+		]
+	}
+}
