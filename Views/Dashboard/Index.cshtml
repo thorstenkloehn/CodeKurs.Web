@@ -5,9 +5,16 @@
 
 <div class="container mt-5">
     <div class="row mb-4">
-        <div class="col-md-12">
+        <div class="col-md-8">
             <h1 class="display-5 text-dark"><i class="bi bi-speedometer2"></i> Dein Lern-Dashboard</h1>
             <p class="text-muted lead">Hier siehst du deinen aktuellen Fortschritt auf der Plattform.</p>
+        </div>
+        <div class="col-md-4 text-end d-flex align-items-center justify-content-end">
+            <form asp-action="ResetProgress" method="post" onsubmit="return confirm('Möchtest du wirklich deinen gesamten Fortschritt löschen? Dies kann nicht rückgängig gemacht werden.');">
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-trash"></i> Fortschritt zurücksetzen
+                </button>
+            </form>
         </div>
     </div>
 

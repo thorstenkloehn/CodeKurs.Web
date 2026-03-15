@@ -48,4 +48,13 @@ public class DashboardController : Controller
 
         return View(viewModel);
     }
+
+    [HttpPost]
+    public async Task<IActionResult> ResetProgress()
+    {
+        var progress = await _context.Progress.Where(p => p.UserId == "guest").ToListAsync();
+        _context.Progress.RemoveRange(progress);
+        await _context.SaveChangesAsync();
+        return RedirectToAction("Index");
+    }
 }

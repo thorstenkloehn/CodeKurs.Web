@@ -87,7 +87,13 @@
                         <i class="bi bi-check2-circle text-success" style="font-size: 4rem;"></i>
                         <h3 class="mt-3">Lektion gelesen?</h3>
                         <p class="text-muted">Klicke auf die nächste Aufgabe in der Sidebar, um fortzufahren.</p>
-                        <a href="#" class="btn btn-outline-primary" onclick="markTheoryCompleted()">Als gelesen markieren</a>
+                        <div class="d-flex justify-content-center gap-2">
+                            <a href="#" class="btn btn-outline-primary" onclick="markTheoryCompleted()">Als gelesen markieren</a>
+                            @if (ViewBag.NextTaskId != null)
+                            {
+                                <a asp-action="Index" asp-route-id="@ViewBag.NextTaskId" class="btn btn-success"><i class="bi bi-arrow-right-circle"></i> Nächste Übung</a>
+                            }
+                        </div>
                     </div>
                 </div>
             }
@@ -114,11 +120,31 @@
                             </div>
                             <div class="card-body d-flex flex-column bg-dark">
                                 <div id="feedback" class="mb-3 alert d-none"></div>
+                                
+                                <div class="input-group input-group-sm mb-2">
+                                    <span class="input-group-text bg-secondary border-0 text-white" style="font-size: 0.75rem;">Eingabe (Stdin):</span>
+                                    <input type="text" id="testInput" class="form-control bg-dark text-info border-secondary" placeholder="Werte hier tippen...">
+                                </div>
+
                                 <pre id="output" class="text-light p-2 flex-grow-1 mb-0" style="font-family: 'Consolas', 'Courier New', monospace; font-size: 0.85rem; white-space: pre-wrap; background: transparent; overflow-y: auto;"></pre>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                @if (!string.IsNullOrEmpty(Model.Solution))
+                {
+                    <div class="mt-4 d-none" id="solutionSection">
+                        <button class="btn btn-outline-secondary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#solutionCollapse">
+                            <i class="bi bi-lightbulb"></i> Lösung anzeigen
+                        </button>
+                        <div class="collapse mt-2" id="solutionCollapse">
+                            <div class="card card-body bg-dark text-white p-0">
+                                <pre class="p-3 mb-0" style="font-family: 'Consolas', 'Courier New', monospace; font-size: 0.9rem;">@Model.Solution</pre>
+                            </div>
+                        </div>
+                    </div>
+                }
             }
             else if (Model.Type == TaskType.MultipleChoice)
             {
@@ -219,6 +245,31 @@
                     }
                 });
 
+                // --- Rust Completions ---
+                monaco.languages.registerCompletionItemProvider('rust', {
+                    provideCompletionItems: function(model, position) {
+                        var suggestions = [
+                            { label: 'println!', kind: monaco.languages.CompletionItemKind.Method, insertText: 'println!("${1:message}");', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet },
+                            { label: 'fn main', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'fn main() {\n    $0\n}', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet },
+                            { label: 'let mut', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'let mut ' },
+                            { label: 'match', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'match ${1:expression} {\n    $2 => $3,\n    _ => $4,\n}', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet }
+                        ];
+                        return { suggestions: suggestions };
+                    }
+                });
+
+                // --- Python Completions ---
+                monaco.languages.registerCompletionItemProvider('python', {
+                    provideCompletionItems: function(model, position) {
+                        var suggestions = [
+                            { label: 'print', kind: monaco.languages.CompletionItemKind.Method, insertText: 'print(${1:message})', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet },
+                            { label: 'def', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'def ${1:func_name}(${2:args}):\n    $0', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet },
+                            { label: 'if main', kind: monaco.languages.CompletionItemKind.Snippet, insertText: 'if __name__ == "__main__":\n    $0', insertTextRules: monaco.languages.CompletionItemInsertRule.InsertAsSnippet }
+                        ];
+                        return { suggestions: suggestions };
+                    }
+                });
+
                 // --- JavaScript Completions ---
                 monaco.languages.registerCompletionItemProvider('javascript', {
                     provideCompletionItems: function(model, position) {
@@ -299,6 +350,7 @@
             var feedbackElement = document.getElementById('feedback');
             var taskId = document.getElementById('taskId').value;
             var statusBadge = document.getElementById('statusBadge');
+            var testInput = document.getElementById('testInput')?.value || "";
             
             if (!isSilent) {
                 if (outputElement) outputElement.textContent = "> Überprüfe...\n";
@@ -310,13 +362,18 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
                     code: answer,
-                    taskId: parseInt(taskId)
+                    taskId: parseInt(taskId),
+                    input: testInput
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (!isSilent && outputElement) outputElement.textContent = data.output || "";
                 
+                // Show solution button after attempt
+                var solutionSection = document.getElementById('solutionSection');
+                if (solutionSection) solutionSection.classList.remove('d-none');
+
                 // Set markers (errors) in editor
                 if (editor && typeof monaco !== 'undefined') {
                     var markers = [];
@@ -342,7 +399,17 @@
                     feedbackElement.classList.remove('alert-success', 'alert-danger', 'alert-warning');
                     
                     if (data.success && data.validated) {
-                        feedbackElement.innerHTML = "<strong>Korrekt!</strong> Hervorragende Arbeit.";
+                        var nextButtonHtml = "";
+                        var nextTaskId = "@ViewBag.NextTaskId";
+                        if (nextTaskId && nextTaskId !== "") {
+                            nextButtonHtml = '<div class="mt-3"><a href="/Home/Index/' + nextTaskId + '" class="btn btn-success"><i class="bi bi-arrow-right-circle"></i> Nächste Übung</a></div>';
+                        }
+                        
+                        if (data.type === "MultipleChoice") {
+                             feedbackElement.innerHTML = "<strong>Korrekt!</strong>" + nextButtonHtml;
+                        } else {
+                             feedbackElement.innerHTML = "<strong>Korrekt!</strong> Hervorragende Arbeit." + nextButtonHtml;
+                        }
                         feedbackElement.classList.add('alert-success');
                         if (statusBadge) {
                             statusBadge.className = "badge bg-success p-2";

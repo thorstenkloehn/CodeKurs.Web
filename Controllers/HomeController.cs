@@ -30,10 +30,25 @@ public class HomeController : Controller
         }
         else if (!string.IsNullOrEmpty(language))
         {
+            // Finden der ersten nicht abgeschlossenen Aufgabe für diesen Kurs
+            var completedTaskIds = await _context.Progress
+                .Where(p => p.UserId == "guest" && p.IsCompleted)
+                .Select(p => p.TaskId)
+                .ToListAsync();
+
             task = await _context.Tasks.Include(t => t.Lesson)
-                .Where(t => t.Language == language)
+                .Where(t => t.Language == language && !completedTaskIds.Contains(t.Id))
                 .OrderBy(t => t.LessonId).ThenBy(t => t.Order)
                 .FirstOrDefaultAsync();
+
+            // Falls alle gelöst sind oder keine gefunden wurde, nimm die erste Aufgabe
+            if (task == null)
+            {
+                task = await _context.Tasks.Include(t => t.Lesson)
+                    .Where(t => t.Language == language)
+                    .OrderBy(t => t.LessonId).ThenBy(t => t.Order)
+                    .FirstOrDefaultAsync();
+            }
         }
         else
         {
@@ -55,6 +70,15 @@ public class HomeController : Controller
             .ToListAsync();
         
         ViewBag.CurrentLanguage = task.Language;
+
+        // Nächste Aufgabe finden
+        var nextTask = await _context.Tasks
+            .Where(t => t.Language == task.Language)
+            .OrderBy(t => t.LessonId).ThenBy(t => t.Order)
+            .Where(t => (t.LessonId > task.LessonId) || (t.LessonId == task.LessonId && t.Order > task.Order))
+            .FirstOrDefaultAsync();
+        
+        ViewBag.NextTaskId = nextTask?.Id;
         
         // Fortschritt laden
         var progress = await _context.Progress
@@ -135,7 +159,7 @@ public class HomeController : Controller
                     codeToExecute = $"{request.Code}\n\n{task.TestCode}";
                 }
 
-                var execResult = await _codeExecutor.ExecuteAsync(codeToExecute, task.Language);
+                var execResult = await _codeExecutor.ExecuteAsync(codeToExecute, task.Language, request.Input);
                 output = execResult.Output;
                 errors = execResult.Errors;
 
@@ -207,4 +231,5 @@ public class CodeRequest
 {
     public string? Code { get; set; }
     public int? TaskId { get; set; }
+    public string? Input { get; set; }
 }

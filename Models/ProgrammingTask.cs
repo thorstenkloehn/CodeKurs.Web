@@ -24,6 +24,7 @@ public class ProgrammingTask
     // Für Programmieraufgaben
     public string InitialCode { get; set; } = string.Empty;
     public string ExpectedOutput { get; set; } = string.Empty;
+    public string? Solution { get; set; }
     
     // Platzhalter-Logik (z.B. LessonName#TaskName#File#PlaceholderIndex)
     public string? PlaceholderDependency { get; set; }

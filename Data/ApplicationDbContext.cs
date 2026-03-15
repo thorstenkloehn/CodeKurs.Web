@@ -83,8 +83,11 @@ public class ApplicationDbContext : DbContext
                         Language = lesson.Language,
                         InitialCode = t.InitialCode ?? "",
                         ExpectedOutput = t.ExpectedOutput ?? "",
+                        Solution = t.Solution,
                         RequiredKeywords = t.RequiredKeywords,
-                        TestCode = t.TestCode
+                        TestCode = t.TestCode,
+                        ChoicesJson = t.ChoicesJson,
+                        CorrectAnswer = t.CorrectAnswer
                     };
                     modelBuilder.Entity<ProgrammingTask>().HasData(task);
                 }
@@ -109,7 +112,10 @@ public class ApplicationDbContext : DbContext
         public int Order { get; set; }
         public string? InitialCode { get; set; }
         public string? ExpectedOutput { get; set; }
+        public string? Solution { get; set; }
         public string? RequiredKeywords { get; set; }
         public string? TestCode { get; set; }
+        public string? ChoicesJson { get; set; }
+        public string? CorrectAnswer { get; set; }
     }
 }
