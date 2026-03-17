@@ -7,11 +7,13 @@ using CodeKurs.Web.Data;
 
 namespace CodeKurs.Web.Controllers;
 
+[AutoValidateAntiforgeryToken]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
     private readonly CodeExecutorService _codeExecutor;
     private readonly ApplicationDbContext _context;
+    private const string DefaultUserId = "guest_user";
 
     public HomeController(ILogger<HomeController> logger, CodeExecutorService codeExecutor, ApplicationDbContext context)
     {
@@ -32,7 +34,7 @@ public class HomeController : Controller
         {
             // Finden der ersten nicht abgeschlossenen Aufgabe für diesen Kurs
             var completedTaskIds = await _context.Progress
-                .Where(p => p.UserId == "guest" && p.IsCompleted)
+                .Where(p => p.UserId == DefaultUserId && p.IsCompleted)
                 .Select(p => p.TaskId)
                 .ToListAsync();
 
@@ -82,7 +84,7 @@ public class HomeController : Controller
         
         // Fortschritt laden
         var progress = await _context.Progress
-            .FirstOrDefaultAsync(p => p.TaskId == task.Id && p.UserId == "guest");
+            .FirstOrDefaultAsync(p => p.TaskId == task.Id && p.UserId == DefaultUserId);
         
         if (progress != null && !string.IsNullOrEmpty(progress.LastSubmittedCode))
         {
@@ -94,7 +96,7 @@ public class HomeController : Controller
             if (int.TryParse(task.PlaceholderDependency, out int prevTaskId))
             {
                 var prevProgress = await _context.Progress
-                    .FirstOrDefaultAsync(p => p.TaskId == prevTaskId && p.UserId == "guest");
+                    .FirstOrDefaultAsync(p => p.TaskId == prevTaskId && p.UserId == DefaultUserId);
                 
                 if (prevProgress != null && !string.IsNullOrEmpty(prevProgress.LastSubmittedCode))
                 {
@@ -184,14 +186,14 @@ public class HomeController : Controller
             }
 
             var progress = await _context.Progress
-                .FirstOrDefaultAsync(p => p.TaskId == task.Id && p.UserId == "guest");
+                .FirstOrDefaultAsync(p => p.TaskId == task.Id && p.UserId == DefaultUserId);
             
             if (progress == null)
             {
                 progress = new UserProgress
                 {
                     TaskId = task.Id,
-                    UserId = "guest",
+                    UserId = DefaultUserId,
                     LastSubmittedCode = request.Code ?? string.Empty,
                     IsCompleted = validated,
                     LastUpdated = DateTime.UtcNow

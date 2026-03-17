@@ -5,6 +5,7 @@ using CodeKurs.Web.Models;
 
 namespace CodeKurs.Web.Controllers;
 
+[AutoValidateAntiforgeryToken]
 public class AdminController : Controller
 {
     private readonly ApplicationDbContext _context;
@@ -26,7 +27,6 @@ public class AdminController : Controller
     }
 
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ProgrammingTask task)
     {
         if (ModelState.IsValid)
@@ -49,7 +49,6 @@ public class AdminController : Controller
     }
 
     [HttpPost]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int id, ProgrammingTask task)
     {
         if (id != task.Id) return NotFound();
@@ -81,7 +80,6 @@ public class AdminController : Controller
     }
 
     [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var task = await _context.Tasks.FindAsync(id);

@@ -10,6 +10,7 @@ namespace CodeKurs.Web.Controllers.Api;
 public class ProgressController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private const string DefaultUserId = "guest_user";
 
     public ProgressController(ApplicationDbContext context)
     {
@@ -30,14 +31,14 @@ public class ProgressController : ControllerBase
             if (task == null) return NotFound(new { error = "Aufgabe nicht gefunden." });
 
             var progress = await _context.Progress
-                .FirstOrDefaultAsync(p => p.TaskId == task.Id && p.UserId == "guest");
+                .FirstOrDefaultAsync(p => p.TaskId == task.Id && p.UserId == DefaultUserId);
             
             if (progress == null)
             {
                 progress = new UserProgress
                 {
                     TaskId = task.Id,
-                    UserId = "guest", // Später echte User-IDs aus dem Token/Session
+                    UserId = DefaultUserId, // Später echte User-IDs aus dem Token/Session
                     LastSubmittedCode = request.Code ?? string.Empty,
                     IsCompleted = request.IsCompleted,
                     LastUpdated = DateTime.UtcNow

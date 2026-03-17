@@ -1,59 +1,33 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import * as vscode from 'vscode';
-
-export interface Lesson {
-    id: string;
-    title: string;
-    description: string;
-    order: number;
-    language: string;
-    tasks: Task[];
-    fullPath: string;
-}
-
-export interface Task {
-    title: string;
-    description: string;
-    type: string;
-    order: number;
-    initialCode?: string;
-    expectedOutput?: string;
-    solution?: string;
-    requiredKeywords?: string;
-    testCode?: string;
-    choicesJson?: string;
-    correctAnswer?: string;
-}
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.parseLessons = parseLessons;
+const fs = require("fs");
+const path = require("path");
+const vscode = require("vscode");
 const outputChannel = vscode.window.createOutputChannel("CodeKurs Parser");
-
-export function parseLessons(rootPath: string): Lesson[] {
-    const lessons: Lesson[] = [];
+function parseLessons(rootPath) {
+    const lessons = [];
     outputChannel.appendLine(`--- Starte Rekursives Parsing in: ${rootPath} ---`);
-    
     if (!fs.existsSync(rootPath)) {
         outputChannel.appendLine(`KRITISCHER FEHLER: Pfad existiert nicht: ${rootPath}`);
         return [];
     }
-
-    function walkDir(currentPath: string, language: string) {
+    function walkDir(currentPath, language) {
         const files = fs.readdirSync(currentPath, { withFileTypes: true });
         for (const file of files) {
             const fullPath = path.join(currentPath, file.name);
             if (file.isDirectory()) {
                 walkDir(fullPath, language || file.name);
-            } else if (file.name.endsWith('.md')) {
+            }
+            else if (file.name.endsWith('.md')) {
                 try {
                     const content = fs.readFileSync(fullPath, 'utf8');
                     // Splitte robuster (ignoriert leere Teile am Anfang/Ende)
                     const parts = content.split(/---/g).map(p => p.trim()).filter(p => p.length > 0);
-
                     if (parts.length >= 2) {
                         const yaml = parts[0];
                         const mdBody = parts.slice(1).join('\n\n---\n\n');
                         const metadata = parseSimpleYaml(yaml);
-                        
                         const lesson = {
                             id: `${language}-${file.name}`,
                             title: metadata.title || file.name,
@@ -66,47 +40,45 @@ export function parseLessons(rootPath: string): Lesson[] {
                         lessons.push(lesson);
                         outputChannel.appendLine(`      Gefunden: ${lesson.title} [${lesson.language}]`);
                     }
-                } catch (e: any) {
+                }
+                catch (e) {
                     outputChannel.appendLine(`      Fehler bei Datei ${file.name}: ${e.message}`);
                 }
             }
         }
     }
-
     walkDir(rootPath, "");
-    
     outputChannel.appendLine(`--- Fertig. Gesamt: ${lessons.length} Lektionen ---`);
     return lessons.sort((a, b) => a.order - b.order);
 }
-
-function parseSimpleYaml(yaml: string): any {
-    const result: any = { tasks: [] };
+function parseSimpleYaml(yaml) {
+    const result = { tasks: [] };
     const lines = yaml.split('\n');
     let currentKey = '';
-    let currentTask: any = null;
+    let currentTask = null;
     let isMultiline = false;
-    let multilineContent: string[] = [];
-
+    let multilineContent = [];
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const trimmed = line.trim();
-        
-        if (!trimmed || (trimmed.startsWith('#') && !isMultiline)) continue;
-
+        if (!trimmed || (trimmed.startsWith('#') && !isMultiline))
+            continue;
         // Multiline support (|)
         if (isMultiline) {
             if (line.startsWith('    ') || line.startsWith('\t') || line.trim() === '') {
-                multilineContent.push(line.replace(/^\s{4}/, '')); 
+                multilineContent.push(line.replace(/^\s{4}/, ''));
                 continue;
-            } else {
+            }
+            else {
                 const finalValue = multilineContent.join('\n').trim();
-                if (currentTask && currentKey) currentTask[currentKey] = finalValue;
-                else if (currentKey) result[currentKey] = finalValue;
+                if (currentTask && currentKey)
+                    currentTask[currentKey] = finalValue;
+                else if (currentKey)
+                    result[currentKey] = finalValue;
                 isMultiline = false;
                 multilineContent = [];
             }
         }
-
         // New Task (-)
         if (trimmed.startsWith('- ')) {
             currentTask = {};
@@ -119,13 +91,13 @@ function parseSimpleYaml(yaml: string): any {
                 if (val === '|') {
                     isMultiline = true;
                     multilineContent = [];
-                } else {
+                }
+                else {
                     currentTask[currentKey] = val.replace(/^["'](.*)["']$/, '$1');
                 }
             }
             continue;
         }
-
         // Standard Key: Value (with optional quotes)
         const match = trimmed.match(/^(\w+):\s*(.*)/);
         if (match) {
@@ -136,12 +108,11 @@ function parseSimpleYaml(yaml: string): any {
                 multilineContent = [];
                 continue;
             }
-            
             value = value.replace(/^["'](.*)["']$/, '$1');
-            
             if (currentTask) {
                 currentTask[currentKey] = value;
-            } else {
+            }
+            else {
                 result[currentKey] = value;
             }
         }
@@ -149,9 +120,11 @@ function parseSimpleYaml(yaml: string): any {
     // Last multiline check
     if (isMultiline && currentKey) {
         const finalValue = multilineContent.join('\n').trim();
-        if (currentTask) currentTask[currentKey] = finalValue;
-        else result[currentKey] = finalValue;
+        if (currentTask)
+            currentTask[currentKey] = finalValue;
+        else
+            result[currentKey] = finalValue;
     }
-    
     return result;
 }
+//# sourceMappingURL=contentParser.js.map

@@ -10,6 +10,7 @@ namespace CodeKurs.Web.Controllers.Api;
 public class LessonsController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private const string DefaultUserId = "guest_user";
 
     public LessonsController(ApplicationDbContext context)
     {
@@ -69,7 +70,7 @@ public class LessonsController : ControllerBase
 
         // InitialCode ggf. aus bisherigem Fortschritt laden
         var progress = await _context.Progress
-            .FirstOrDefaultAsync(p => p.TaskId == task.Id && p.UserId == "guest");
+            .FirstOrDefaultAsync(p => p.TaskId == task.Id && p.UserId == DefaultUserId);
         
         string userCode = string.Empty;
         bool isCompleted = false;
@@ -82,7 +83,7 @@ public class LessonsController : ControllerBase
         else if (!string.IsNullOrEmpty(task.PlaceholderDependency) && int.TryParse(task.PlaceholderDependency, out int prevTaskId))
         {
             var prevProgress = await _context.Progress
-                .FirstOrDefaultAsync(p => p.TaskId == prevTaskId && p.UserId == "guest");
+                .FirstOrDefaultAsync(p => p.TaskId == prevTaskId && p.UserId == DefaultUserId);
             
             if (prevProgress != null && !string.IsNullOrEmpty(prevProgress.LastSubmittedCode))
             {
@@ -113,7 +114,7 @@ public class LessonsController : ControllerBase
     public async Task<IActionResult> GetNextTask(string language)
     {
         var completedTaskIds = await _context.Progress
-            .Where(p => p.UserId == "guest" && p.IsCompleted)
+            .Where(p => p.UserId == DefaultUserId && p.IsCompleted)
             .Select(p => p.TaskId)
             .ToListAsync();
 

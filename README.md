@@ -1,5 +1,8 @@
 # CodeKurs.Web - Interaktive Programmier-Lernplattform
 
+> [!WARNING]
+> **PROTOTYP:** Dies ist eine reine Testumgebung und kein Produktivserver. Die Anwendung dient dem Testen von CodeKurs.Web in einer kontrollierten Umgebung.
+
 CodeKurs.Web ist eine webbasierte Lernplattform, die es ermöglicht, Programmiersprachen direkt im Browser zu erlernen. Mit einem integrierten Monaco-Editor und automatisierter Code-Validierung bietet sie ein interaktives Lernerlebnis.
 
 ## 🚀 Projektstatus & Umgebung

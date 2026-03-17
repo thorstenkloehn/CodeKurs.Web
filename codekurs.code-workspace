@@ -7,6 +7,10 @@
 		{
 			"path": "lernen",
 			"name": "Kursinhalte (Markdown)"
+		},
+		{
+			"path": "extension",
+			"name": "CodeKurs - VS Code Extension"
 		}
 	],
 	"settings": {

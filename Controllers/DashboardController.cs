@@ -5,9 +5,11 @@ using CodeKurs.Web.Models;
 
 namespace CodeKurs.Web.Controllers;
 
+[AutoValidateAntiforgeryToken]
 public class DashboardController : Controller
 {
     private readonly ApplicationDbContext _context;
+    private const string DefaultUserId = "guest_user";
 
     public DashboardController(ApplicationDbContext context)
     {
@@ -18,7 +20,7 @@ public class DashboardController : Controller
     {
         var tasks = await _context.Tasks.ToListAsync();
         var progress = await _context.Progress
-            .Where(p => p.UserId == "guest")
+            .Where(p => p.UserId == DefaultUserId)
             .ToListAsync();
 
         var viewModel = new DashboardViewModel
@@ -52,7 +54,7 @@ public class DashboardController : Controller
     [HttpPost]
     public async Task<IActionResult> ResetProgress()
     {
-        var progress = await _context.Progress.Where(p => p.UserId == "guest").ToListAsync();
+        var progress = await _context.Progress.Where(p => p.UserId == DefaultUserId).ToListAsync();
         _context.Progress.RemoveRange(progress);
         await _context.SaveChangesAsync();
         return RedirectToAction("Index");

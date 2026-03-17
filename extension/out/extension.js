@@ -1,112 +1,95 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
-import { parseLessons, Lesson, Task } from './contentParser';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-
-const execAsync = promisify(exec);
-
-export function activate(context: vscode.ExtensionContext) {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.activate = activate;
+const vscode = require("vscode");
+const path = require("path");
+const fs = require("fs");
+const contentParser_1 = require("./contentParser");
+const child_process_1 = require("child_process");
+const util_1 = require("util");
+const execAsync = (0, util_1.promisify)(child_process_1.exec);
+function activate(context) {
     const outputChannel = vscode.window.createOutputChannel("CodeKurs");
-    
     // Versuche den 'lernen' Ordner an verschiedenen Stellen zu finden
     let rootPath = path.join(context.extensionPath, '..', 'lernen');
-    
     if (!fs.existsSync(rootPath) && vscode.workspace.workspaceFolders) {
         // Zweiter Versuch: Direkt im Workspace root (falls das Projekt dort geöffnet ist)
         const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
         rootPath = path.join(workspaceRoot, 'lernen');
     }
-
     outputChannel.appendLine(`Suche Lektionen in: ${rootPath}`);
     outputChannel.show(); // Zeige den Output-Kanal automatisch an
-
     if (!fs.existsSync(rootPath)) {
         outputChannel.appendLine("FEHLER: 'lernen' Ordner wurde nicht gefunden!");
         vscode.window.showErrorMessage(`Lern-Inhalte nicht gefunden unter: ${rootPath}`);
         return;
     }
-
-    const lessons = parseLessons(rootPath);
+    const lessons = (0, contentParser_1.parseLessons)(rootPath);
     outputChannel.appendLine(`${lessons.length} Lektionen erfolgreich geladen.`);
-
     if (lessons.length === 0) {
         outputChannel.appendLine("Warnung: Der Ordner ist vorhanden, aber es wurden keine gültigen .md Dateien gefunden.");
         vscode.window.showWarningMessage("Keine Lektionen gefunden. Bitte prüfe die Markdown-Dateien.");
     }
-
     const treeDataProvider = new CodeKursProvider(lessons);
     vscode.window.registerTreeDataProvider('codekurs-lessons', treeDataProvider);
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('codekurs.openLesson', async (lesson: Lesson) => {
-            LessonPanel.createOrShow(context.extensionUri, lesson);
-
-            // Automatisch eine Code-Datei für die Übung öffnen
-            if (lesson.tasks && lesson.tasks.length > 0) {
-                const firstTask = lesson.tasks[0];
-                const languageId = mapLanguageToVsCode(lesson.language);
-                
-                const doc = await vscode.workspace.openTextDocument({
-                    content: firstTask.initialCode || "",
-                    language: languageId
-                });
-                
-                await vscode.window.showTextDocument(doc, vscode.ViewColumn.Two);
-            }
-        })
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('codekurs.checkCode', async () => {
-            const editor = vscode.window.activeTextEditor;
-            if (!editor) {
-                vscode.window.showErrorMessage("Kein aktiver Editor gefunden.");
-                return;
-            }
-
-            const code = editor.document.getText();
-            const lang = editor.document.languageId;
-            
-            vscode.window.withProgress({
-                location: vscode.ProgressLocation.Notification,
-                title: `Code (${lang}) wird geprüft...`,
-                cancellable: false
-            }, async (progress) => {
-                try {
-                    // Temporäre Datei für die Ausführung erstellen
-                    const tempDir = path.join(context.extensionPath, 'temp');
-                    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
-                    
-                    const fileName = path.join(tempDir, `solution.${getExt(lang)}`);
-                    fs.writeFileSync(fileName, code);
-
-                    let command = "";
-                    if (lang === 'python') command = `python "${fileName}"`;
-                    else if (lang === 'javascript') command = `node "${fileName}"`;
-                    else if (lang === 'go') command = `go run "${fileName}"`;
-                    else if (lang === 'rust') command = `rustc "${fileName}" -o "${fileName}.bin" && "${fileName}.bin"`;
-                    
-                    if (!command) {
-                        vscode.window.showWarningMessage(`Validierung für ${lang} lokal noch nicht konfiguriert.`);
-                        return;
-                    }
-
-                    const { stdout, stderr } = await execAsync(command);
-                    const output = stdout || stderr;
-                    vscode.window.showInformationMessage("Ausgabe:\n" + output);
-                    
-                } catch (err: any) {
-                    vscode.window.showErrorMessage("Fehler bei der Ausführung: " + err.message);
-                }
+    context.subscriptions.push(vscode.commands.registerCommand('codekurs.openLesson', async (lesson) => {
+        LessonPanel.createOrShow(context.extensionUri, lesson);
+        // Automatisch eine Code-Datei für die Übung öffnen
+        if (lesson.tasks && lesson.tasks.length > 0) {
+            const firstTask = lesson.tasks[0];
+            const languageId = mapLanguageToVsCode(lesson.language);
+            const doc = await vscode.workspace.openTextDocument({
+                content: firstTask.initialCode || "",
+                language: languageId
             });
-        })
-    );
+            await vscode.window.showTextDocument(doc, vscode.ViewColumn.Two);
+        }
+    }));
+    context.subscriptions.push(vscode.commands.registerCommand('codekurs.checkCode', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            vscode.window.showErrorMessage("Kein aktiver Editor gefunden.");
+            return;
+        }
+        const code = editor.document.getText();
+        const lang = editor.document.languageId;
+        vscode.window.withProgress({
+            location: vscode.ProgressLocation.Notification,
+            title: `Code (${lang}) wird geprüft...`,
+            cancellable: false
+        }, async (progress) => {
+            try {
+                // Temporäre Datei für die Ausführung erstellen
+                const tempDir = path.join(context.extensionPath, 'temp');
+                if (!fs.existsSync(tempDir))
+                    fs.mkdirSync(tempDir);
+                const fileName = path.join(tempDir, `solution.${getExt(lang)}`);
+                fs.writeFileSync(fileName, code);
+                let command = "";
+                if (lang === 'python')
+                    command = `python "${fileName}"`;
+                else if (lang === 'javascript')
+                    command = `node "${fileName}"`;
+                else if (lang === 'go')
+                    command = `go run "${fileName}"`;
+                else if (lang === 'rust')
+                    command = `rustc "${fileName}" -o "${fileName}.bin" && "${fileName}.bin"`;
+                if (!command) {
+                    vscode.window.showWarningMessage(`Validierung für ${lang} lokal noch nicht konfiguriert.`);
+                    return;
+                }
+                const { stdout, stderr } = await execAsync(command);
+                const output = stdout || stderr;
+                vscode.window.showInformationMessage("Ausgabe:\n" + output);
+            }
+            catch (err) {
+                vscode.window.showErrorMessage("Fehler bei der Ausführung: " + err.message);
+            }
+        });
+    }));
 }
-
-function mapLanguageToVsCode(lang: string): string {
-    const map: { [key: string]: string } = {
+function mapLanguageToVsCode(lang) {
+    const map = {
         'python': 'python',
         'csharp': 'csharp',
         'javascript': 'javascript',
@@ -118,9 +101,8 @@ function mapLanguageToVsCode(lang: string): string {
     };
     return map[lang.toLowerCase()] || 'plaintext';
 }
-
-function getExt(langId: string): string {
-    const map: { [key: string]: string } = {
+function getExt(langId) {
+    const map = {
         'python': 'py',
         'javascript': 'js',
         'go': 'go',
@@ -132,14 +114,13 @@ function getExt(langId: string): string {
     };
     return map[langId] || 'txt';
 }
-
-class CodeKursProvider implements vscode.TreeDataProvider<Lesson | LanguageGroup> {
-    private _onDidChangeTreeData: vscode.EventEmitter<Lesson | LanguageGroup | undefined | void> = new vscode.EventEmitter<Lesson | LanguageGroup | undefined | void>();
-    readonly onDidChangeTreeData: vscode.Event<Lesson | LanguageGroup | undefined | void> = this._onDidChangeTreeData.event;
-
-    constructor(private lessons: Lesson[]) {}
-
-    getTreeItem(element: Lesson | LanguageGroup): vscode.TreeItem {
+class CodeKursProvider {
+    constructor(lessons) {
+        this.lessons = lessons;
+        this._onDidChangeTreeData = new vscode.EventEmitter();
+        this.onDidChangeTreeData = this._onDidChangeTreeData.event;
+    }
+    getTreeItem(element) {
         if (element instanceof LanguageGroup) {
             return {
                 label: element.name,
@@ -157,8 +138,7 @@ class CodeKursProvider implements vscode.TreeDataProvider<Lesson | LanguageGroup
             iconPath: new vscode.ThemeIcon('book')
         };
     }
-
-    getChildren(element?: Lesson | LanguageGroup): (Lesson | LanguageGroup)[] {
+    getChildren(element) {
         if (!element) {
             const langs = [...new Set(this.lessons.map(l => l.language))];
             return langs.map(l => new LanguageGroup(l));
@@ -169,50 +149,40 @@ class CodeKursProvider implements vscode.TreeDataProvider<Lesson | LanguageGroup
         return [];
     }
 }
-
 class LanguageGroup {
-    constructor(public readonly name: string) {}
+    constructor(name) {
+        this.name = name;
+    }
 }
-
 class LessonPanel {
-    public static currentPanel: LessonPanel | undefined;
-    private readonly _panel: vscode.WebviewPanel;
-    private _disposables: vscode.Disposable[] = [];
-
-    private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, lesson: Lesson) {
+    constructor(panel, extensionUri, lesson) {
+        this._disposables = [];
         this._panel = panel;
         this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
         this._update(lesson);
     }
-
-    public static createOrShow(extensionUri: vscode.Uri, lesson: Lesson) {
+    static createOrShow(extensionUri, lesson) {
         const column = vscode.window.activeTextEditor ? vscode.window.activeTextEditor.viewColumn : undefined;
-
         if (LessonPanel.currentPanel) {
             LessonPanel.currentPanel._panel.reveal(column);
             LessonPanel.currentPanel._update(lesson);
             return;
         }
-
         const panel = vscode.window.createWebviewPanel('lessonView', `CodeKurs: ${lesson.title}`, column || vscode.ViewColumn.One, {
             enableScripts: true
         });
-
         panel.webview.onDidReceiveMessage(message => {
             if (message.command === 'checkCode') {
                 vscode.commands.executeCommand('codekurs.checkCode');
             }
         }, undefined, []);
-
         LessonPanel.currentPanel = new LessonPanel(panel, extensionUri, lesson);
     }
-
-    private _update(lesson: Lesson) {
+    _update(lesson) {
         this._panel.title = `Lektion: ${lesson.title}`;
         this._panel.webview.html = this._getHtmlForWebview(lesson);
     }
-
-    private _getHtmlForWebview(lesson: Lesson) {
+    _getHtmlForWebview(lesson) {
         const firstTask = (lesson.tasks && lesson.tasks.length > 0) ? lesson.tasks[0] : null;
         const solutionHtml = firstTask?.solution ? `
             <div id="solution-container" style="display: none; margin-top: 15px;">
@@ -221,7 +191,6 @@ class LessonPanel {
             </div>
             <button onclick="toggleSolution()" style="background: var(--vscode-button-secondaryBackground); color: var(--vscode-button-secondaryForeground); margin-left: 10px;">Lösung anzeigen</button>
         ` : '';
-
         return `<!DOCTYPE html>
         <html lang="de">
         <head>
@@ -257,13 +226,14 @@ class LessonPanel {
         </body>
         </html>`;
     }
-
-    public dispose() {
+    dispose() {
         LessonPanel.currentPanel = undefined;
         this._panel.dispose();
         while (this._disposables.length) {
             const x = this._disposables.pop();
-            if (x) x.dispose();
+            if (x)
+                x.dispose();
         }
     }
 }
+//# sourceMappingURL=extension.js.map

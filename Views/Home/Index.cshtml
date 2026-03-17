@@ -344,6 +344,8 @@
         </script>
     }
 
+    @Html.AntiForgeryToken()
+
     <script>
         function submitAnswer(answer, isSilent) {
             var outputElement = document.getElementById('output');
@@ -352,6 +354,9 @@
             var statusBadge = document.getElementById('statusBadge');
             var testInput = document.getElementById('testInput')?.value || "";
             
+            // Anti-Forgery Token
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
             if (!isSilent) {
                 if (outputElement) outputElement.textContent = "> Überprüfe...\n";
                 feedbackElement.classList.add('d-none');
@@ -359,7 +364,10 @@
 
             fetch('/Home/RunCode', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token
+                },
                 body: JSON.stringify({ 
                     code: answer,
                     taskId: parseInt(taskId),
